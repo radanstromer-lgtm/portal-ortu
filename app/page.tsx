@@ -3,8 +3,8 @@ import React from 'react';
 import { getSession } from '@/app/lib/session';
 import { redirect } from 'next/navigation';
 import { LogoutButton } from '@/app/components/logout-button';
+import { supabase } from '@/app/lib/supabase';
 
-// ... (interface Pembayaran dan mockData tetap sama) ...
 interface Pembayaran {
   id_pembayaran: number;
   bulan: number;
@@ -24,42 +24,31 @@ export default async function RiwayatPembayaran() {
     redirect('/login');
   }
 
-  // Nantinya, no_hp pengguna bisa digunakan untuk fetch data API:
-  // const userPhone = session.noHp;
-  // const dataPembayaran = await getRiwayatByPhone(userPhone);
+  // Fetch data dari tb_pembayaran_siswa di Supabase untuk user yang login
+  const { data: rawPembayaran, error } = await supabase
+    .from('tb_pembayaran_siswa')
+    .select('id_pembayaran, bulan, tahun, nominal, status, tanggal_bayar, metode_bayar')
+    .eq('id_siswa', session.userId)
+    .is('deleted_at', null)
+    .order('tahun', { ascending: false })
+    .order('bulan', { ascending: false });
 
-  // Mock data: Nantinya ini diganti dengan fetch() ke REST API CodeIgniter Anda
-const mockData: Pembayaran[] = [
-  {
-    id_pembayaran: 12,
-    bulan: 7,
-    tahun: 2026,
-    nominal: 150000.00,
-    status: 'Lunas',
-    tanggal_bayar: '2026-07-12T14:08:50',
-    metode_bayar: 'Cash',
-  },
-  {
-    id_pembayaran: 11,
-    bulan: 6,
-    tahun: 2026,
-    nominal: 150000.00,
-    status: 'Lunas',
-    tanggal_bayar: '2026-06-10T09:15:00',
-    metode_bayar: 'Transfer',
-  },
-  {
-    id_pembayaran: 10,
-    bulan: 5,
-    tahun: 2026,
-    nominal: 150000.00,
-    status: 'Belum Bayar',
-    tanggal_bayar: null,
-    metode_bayar: null,
+  if (error) {
+    console.error('Error fetching pembayaran:', error);
   }
-];
 
-const namaBulan = ["", "Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+  // Konversi tipe data nominal ke number jika bertipe string (numeric di PostgreSQL)
+  const pembayaranList: Pembayaran[] = (rawPembayaran || []).map((item) => ({
+    id_pembayaran: item.id_pembayaran,
+    bulan: item.bulan,
+    tahun: item.tahun,
+    nominal: typeof item.nominal === 'string' ? parseFloat(item.nominal) : item.nominal,
+    status: item.status as 'Belum Bayar' | 'Lunas' | 'Terlambat',
+    tanggal_bayar: item.tanggal_bayar,
+    metode_bayar: item.metode_bayar,
+  }));
+
+  const namaBulan = ["", "Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
 
   // Fungsi format Rupiah
   const formatRupiah = (angka: number) => {
@@ -73,7 +62,11 @@ const namaBulan = ["", "Januari", "Februari", "Maret", "April", "Mei", "Juni", "
   // Fungsi format Tanggal
   const formatTanggal = (isoString: string | null) => {
     if (!isoString) return '-';
-    const date = new Date(isoString);
+    // Ganti spasi dengan 'T' jika formatnya YYYY-MM-DD HH:mm:ss
+    const formattedString = isoString.includes(' ') && !isoString.includes('T')
+      ? isoString.replace(' ', 'T')
+      : isoString;
+    const date = new Date(formattedString);
     return new Intl.DateTimeFormat('id-ID', {
       day: 'numeric',
       month: 'long',
@@ -125,49 +118,59 @@ const namaBulan = ["", "Januari", "Februari", "Maret", "April", "Mei", "Juni", "
           <h2 className="text-gray-800 font-semibold mb-4 text-lg">Riwayat Pembayaran</h2>
 
           <div className="space-y-4">
-            {mockData.map((item) => (
-              <div 
-                key={item.id_pembayaran} 
-                className={`p-4 rounded-xl border-l-4 shadow-sm bg-white border ${
-                  item.status === 'Lunas' ? 'border-l-green-500' : 'border-l-red-500'
-                }`}
-              >
-                <div className="flex justify-between items-start mb-2">
-                  <div>
-                    <h3 className="font-bold text-gray-800">
-                      Bulan {namaBulan[item.bulan]} {item.tahun}
-                    </h3>
-                    <p className="text-xs text-gray-500 mt-1">
-                      {item.tanggal_bayar ? formatTanggal(item.tanggal_bayar) : 'Menunggu Pembayaran'}
-                    </p>
-                  </div>
-                  
-                  {/* Badge Status */}
-                  <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                    item.status === 'Lunas' 
-                      ? 'bg-green-100 text-green-700' 
-                      : 'bg-red-100 text-red-700'
-                  }`}>
-                    {item.status}
-                  </span>
-                </div>
-
-                <div className="mt-4 pt-3 border-t border-gray-100 flex justify-between items-center">
-                  <div>
-                    <p className="text-xs text-gray-500">Metode</p>
-                    <p className="text-sm font-medium text-gray-700">
-                      {item.metode_bayar || '-'}
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-xs text-gray-500">Nominal</p>
-                    <p className="text-base font-bold text-gray-900">
-                      {formatRupiah(item.nominal)}
-                    </p>
-                  </div>
-                </div>
+            {pembayaranList.length === 0 ? (
+              <div className="bg-white border rounded-xl p-8 text-center text-gray-500 shadow-sm">
+                <svg className="w-12 h-12 text-gray-300 mx-auto mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <p className="font-medium text-gray-700">Belum Ada Riwayat Pembayaran</p>
+                <p className="text-xs text-gray-400 mt-1">Data pembayaran Anda akan muncul di sini setelah diperbarui.</p>
               </div>
-            ))}
+            ) : (
+              pembayaranList.map((item) => (
+                <div 
+                  key={item.id_pembayaran} 
+                  className={`p-4 rounded-xl border-l-4 shadow-sm bg-white border ${
+                    item.status === 'Lunas' ? 'border-l-green-500' : 'border-l-red-500'
+                  }`}
+                >
+                  <div className="flex justify-between items-start mb-2">
+                    <div>
+                      <h3 className="font-bold text-gray-800">
+                        Bulan {namaBulan[item.bulan]} {item.tahun}
+                      </h3>
+                      <p className="text-xs text-gray-500 mt-1">
+                        {item.tanggal_bayar ? formatTanggal(item.tanggal_bayar) : 'Menunggu Pembayaran'}
+                      </p>
+                    </div>
+                    
+                    {/* Badge Status */}
+                    <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                      item.status === 'Lunas' 
+                        ? 'bg-green-100 text-green-700' 
+                        : 'bg-red-100 text-red-700'
+                    }`}>
+                      {item.status}
+                    </span>
+                  </div>
+
+                  <div className="mt-4 pt-3 border-t border-gray-100 flex justify-between items-center">
+                    <div>
+                      <p className="text-xs text-gray-500">Metode</p>
+                      <p className="text-sm font-medium text-gray-700">
+                        {item.metode_bayar || '-'}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-xs text-gray-500">Nominal</p>
+                      <p className="text-base font-bold text-gray-900">
+                        {formatRupiah(item.nominal)}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </div>
         
