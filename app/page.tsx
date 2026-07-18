@@ -1,65 +1,177 @@
-import Image from "next/image";
+// app/page.tsx
+import React from 'react';
+import { getSession } from '@/app/lib/session';
+import { redirect } from 'next/navigation';
+import { LogoutButton } from '@/app/components/logout-button';
 
-export default function Home() {
+// ... (interface Pembayaran dan mockData tetap sama) ...
+interface Pembayaran {
+  id_pembayaran: number;
+  bulan: number;
+  tahun: number;
+  nominal: number;
+  status: 'Belum Bayar' | 'Lunas' | 'Terlambat';
+  tanggal_bayar: string | null;
+  metode_bayar: string | null;
+}
+
+export default async function RiwayatPembayaran() {
+  // 1. Cek sesi aktif di server
+  const session = await getSession();
+
+  // 2. Jika tidak ada sesi login, redirect ke halaman login
+  if (!session) {
+    redirect('/login');
+  }
+
+  // Nantinya, no_hp pengguna bisa digunakan untuk fetch data API:
+  // const userPhone = session.noHp;
+  // const dataPembayaran = await getRiwayatByPhone(userPhone);
+
+  // Mock data: Nantinya ini diganti dengan fetch() ke REST API CodeIgniter Anda
+const mockData: Pembayaran[] = [
+  {
+    id_pembayaran: 12,
+    bulan: 7,
+    tahun: 2026,
+    nominal: 150000.00,
+    status: 'Lunas',
+    tanggal_bayar: '2026-07-12T14:08:50',
+    metode_bayar: 'Cash',
+  },
+  {
+    id_pembayaran: 11,
+    bulan: 6,
+    tahun: 2026,
+    nominal: 150000.00,
+    status: 'Lunas',
+    tanggal_bayar: '2026-06-10T09:15:00',
+    metode_bayar: 'Transfer',
+  },
+  {
+    id_pembayaran: 10,
+    bulan: 5,
+    tahun: 2026,
+    nominal: 150000.00,
+    status: 'Belum Bayar',
+    tanggal_bayar: null,
+    metode_bayar: null,
+  }
+];
+
+const namaBulan = ["", "Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+
+  // Fungsi format Rupiah
+  const formatRupiah = (angka: number) => {
+    return new Intl.NumberFormat('id-ID', {
+      style: 'currency',
+      currency: 'IDR',
+      minimumFractionDigits: 0,
+    }).format(angka);
+  };
+
+  // Fungsi format Tanggal
+  const formatTanggal = (isoString: string | null) => {
+    if (!isoString) return '-';
+    const date = new Date(isoString);
+    return new Intl.DateTimeFormat('id-ID', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    }).format(date);
+  };
+
+  // Ambil inisial nama untuk avatar
+  const getInitials = (nama: string) => {
+    return nama
+      .split(' ')
+      .map(n => n[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
+  };
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <main className="min-h-screen bg-gray-100 flex justify-center">
+      <div className="w-full max-w-md bg-white min-h-screen shadow-lg relative pb-10">
+        
+        {/* Header App - Menampilkan Nama User */}
+        <header className="bg-blue-600 text-white p-5 sticky top-0 z-10 rounded-b-xl shadow-md">
+          <div className="flex justify-between items-center">
+            <div>
+              <h1 className="text-xl font-bold">Portal Orang Tua</h1>
+              <p className="text-sm text-blue-100 mt-1">Rumah Belajar L 253</p>
+            </div>
+            <div className="flex items-center gap-3">
+              {/* Avatar dengan inisial */}
+              <div className="w-10 h-10 rounded-full bg-blue-500 border-2 border-blue-300 flex items-center justify-center text-sm font-bold">
+                {getInitials(session.nama)}
+              </div>
+              <LogoutButton />
+            </div>
+          </div>
+          {/* Info user */}
+          <div className="mt-3 pt-3 border-t border-blue-500/30">
+            <p className="text-sm text-blue-100">
+              👋 Halo, orang tua dari <span className="font-semibold text-white">{session.nama}</span>
+            </p>
+          </div>
+        </header>
+
+        {/* Konten Halaman */}
+        <div className="p-4 mt-2">
+          <h2 className="text-gray-800 font-semibold mb-4 text-lg">Riwayat Pembayaran</h2>
+
+          <div className="space-y-4">
+            {mockData.map((item) => (
+              <div 
+                key={item.id_pembayaran} 
+                className={`p-4 rounded-xl border-l-4 shadow-sm bg-white border ${
+                  item.status === 'Lunas' ? 'border-l-green-500' : 'border-l-red-500'
+                }`}
+              >
+                <div className="flex justify-between items-start mb-2">
+                  <div>
+                    <h3 className="font-bold text-gray-800">
+                      Bulan {namaBulan[item.bulan]} {item.tahun}
+                    </h3>
+                    <p className="text-xs text-gray-500 mt-1">
+                      {item.tanggal_bayar ? formatTanggal(item.tanggal_bayar) : 'Menunggu Pembayaran'}
+                    </p>
+                  </div>
+                  
+                  {/* Badge Status */}
+                  <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                    item.status === 'Lunas' 
+                      ? 'bg-green-100 text-green-700' 
+                      : 'bg-red-100 text-red-700'
+                  }`}>
+                    {item.status}
+                  </span>
+                </div>
+
+                <div className="mt-4 pt-3 border-t border-gray-100 flex justify-between items-center">
+                  <div>
+                    <p className="text-xs text-gray-500">Metode</p>
+                    <p className="text-sm font-medium text-gray-700">
+                      {item.metode_bayar || '-'}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-xs text-gray-500">Nominal</p>
+                    <p className="text-base font-bold text-gray-900">
+                      {formatRupiah(item.nominal)}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+        
+      </div>
+    </main>
   );
 }
