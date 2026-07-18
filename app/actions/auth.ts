@@ -52,7 +52,8 @@ export async function login(prevState: LoginState, formData: FormData): Promise<
 
   } catch (err) {
     console.error('Login error:', err);
-    return { error: 'Terjadi kesalahan. Silakan coba lagi.' };
+    const message = err instanceof Error ? err.message : String(err);
+    return { error: `Terjadi kesalahan: ${message}` };
   }
 
   // Redirect di luar try-catch karena redirect melempar error internal Next.js
