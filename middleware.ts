@@ -2,8 +2,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { jwtVerify } from 'jose';
 
-const secretKey = process.env.SESSION_SECRET;
-const encodedKey = new TextEncoder().encode(secretKey);
+function getEncodedKey() {
+  const secretKey = process.env.SESSION_SECRET;
+  if (!secretKey) {
+    throw new Error('SESSION_SECRET environment variable is not set');
+  }
+  return new TextEncoder().encode(secretKey);
+}
 
 // Routes yang tidak perlu login
 const publicRoutes = ['/login'];
@@ -17,7 +22,7 @@ export async function middleware(request: NextRequest) {
     const session = request.cookies.get('session')?.value;
     if (session) {
       try {
-        await jwtVerify(session, encodedKey, { algorithms: ['HS256'] });
+        await jwtVerify(session, getEncodedKey(), { algorithms: ['HS256'] });
         return NextResponse.redirect(new URL('/', request.url));
       } catch {
         // Session invalid, biarkan akses login
@@ -33,7 +38,7 @@ export async function middleware(request: NextRequest) {
   }
 
   try {
-    await jwtVerify(session, encodedKey, { algorithms: ['HS256'] });
+    await jwtVerify(session, getEncodedKey(), { algorithms: ['HS256'] });
     return NextResponse.next();
   } catch {
     // Session invalid, redirect ke login
