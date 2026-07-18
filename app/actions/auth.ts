@@ -1,7 +1,7 @@
 // app/actions/auth.ts
 'use server';
 
-import { supabase } from '@/app/lib/supabase';
+import { getSupabase } from '@/app/lib/supabase';
 import { createSession, deleteSession } from '@/app/lib/session';
 import { redirect } from 'next/navigation';
 
@@ -21,7 +21,7 @@ export async function login(prevState: LoginState, formData: FormData): Promise<
 
   try {
     // Cari siswa berdasarkan no_hp, nis, atau nama_siswa
-    const { data: siswaList, error } = await supabase
+    const { data: siswaList, error } = await getSupabase()
       .from('tb_siswa')
       .select('id_siswa, nis, nama_siswa, no_hp, unique_code')
       .or(`no_hp.eq.${identifier},nis.eq.${identifier},nama_siswa.ilike.${identifier}`)

@@ -3,7 +3,7 @@ import React from 'react';
 import { getSession } from '@/app/lib/session';
 import { redirect } from 'next/navigation';
 import { LogoutButton } from '@/app/components/logout-button';
-import { supabase } from '@/app/lib/supabase';
+import { getSupabase } from '@/app/lib/supabase';
 
 interface Pembayaran {
   id_pembayaran: number;
@@ -25,7 +25,7 @@ export default async function RiwayatPembayaran() {
   }
 
   // Fetch data dari tb_pembayaran_siswa di Supabase untuk user yang login
-  const { data: rawPembayaran, error } = await supabase
+  const { data: rawPembayaran, error } = await getSupabase()
     .from('tb_pembayaran_siswa')
     .select('id_pembayaran, bulan, tahun, nominal, status, tanggal_bayar, metode_bayar')
     .eq('id_siswa', session.userId)

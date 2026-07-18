@@ -20,10 +20,3 @@ export function getSupabase(): SupabaseClient {
   }
   return supabaseInstance;
 }
-
-// Backward compatibility - lazy getter
-export const supabase = new Proxy({} as SupabaseClient, {
-  get(_target, prop) {
-    return (getSupabase() as Record<string | symbol, unknown>)[prop];
-  },
-});
