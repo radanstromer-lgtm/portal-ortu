@@ -6,7 +6,7 @@ import { SignJWT, jwtVerify } from 'jose';
 function getEncodedKey() {
   const secretKey = 'a8f9d3e7b2c5104689e4f1a23b567890cdef1234567890abcdef1234567890ab';
   if (!secretKey) {
-    throw new Error('SESSION_SECRET environment variable is not set');
+    throw new Error('SESSION_SECRET environment variable is not set lagi');
   }
   return new TextEncoder().encode(secretKey);
 }
