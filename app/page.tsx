@@ -3,6 +3,7 @@ import React from 'react';
 import { getSession } from '@/app/lib/session';
 import { redirect } from 'next/navigation';
 import { LogoutButton } from '@/app/components/logout-button';
+import { BottomNav } from '@/app/components/bottom-nav';
 import { getSupabase } from '@/app/lib/supabase';
 
 interface Pembayaran {
@@ -88,7 +89,7 @@ export default async function RiwayatPembayaran() {
 
   return (
     <main className="min-h-screen bg-gray-100 flex justify-center">
-      <div className="w-full max-w-md bg-white min-h-screen shadow-lg relative pb-10">
+      <div className="w-full max-w-md bg-white min-h-screen shadow-lg relative pb-20">
         
         {/* Header App - Menampilkan Nama User */}
         <header className="bg-blue-600 text-white p-5 sticky top-0 z-10 rounded-b-xl shadow-md">
@@ -175,6 +176,7 @@ export default async function RiwayatPembayaran() {
         </div>
         
       </div>
+      <BottomNav />
     </main>
   );
 }
