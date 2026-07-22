@@ -51,8 +51,8 @@ export async function GET(request: NextRequest) {
       noHp: siswa.no_hp || '',
     });
 
-    // Redirect ke Halaman Pembayaran dengan flag welcome=true
-    const targetUrl = new URL('/', request.url);
+    // Redirect langsung ke Halaman Pembayaran dengan flag welcome=true
+    const targetUrl = new URL('/pembayaran', request.url);
     targetUrl.searchParams.set('welcome', 'true');
     return NextResponse.redirect(targetUrl);
 

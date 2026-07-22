@@ -9,8 +9,27 @@ export function BottomNav() {
 
   const navItems = [
     {
+      name: 'Beranda',
+      href: '/dashboard',
+      icon: (active: boolean) => (
+        <svg
+          className={`w-6 h-6 transition-transform duration-200 ${active ? 'scale-110' : ''}`}
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          strokeWidth={active ? 2.2 : 1.8}
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"
+          />
+        </svg>
+      ),
+    },
+    {
       name: 'Pembayaran',
-      href: '/',
+      href: '/pembayaran',
       icon: (active: boolean) => (
         <svg
           className={`w-6 h-6 transition-transform duration-200 ${active ? 'scale-110' : ''}`}
@@ -50,9 +69,9 @@ export function BottomNav() {
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 flex justify-center pointer-events-none">
-      <nav className="w-full max-w-md bg-white/95 backdrop-blur-md border-t border-gray-200 shadow-lg pointer-events-auto flex justify-around items-center h-16 px-4 rounded-t-2xl">
+      <nav className="w-full max-w-md bg-white/95 backdrop-blur-md border-t border-gray-200 shadow-lg pointer-events-auto flex justify-around items-center h-16 px-2 rounded-t-2xl">
         {navItems.map((item) => {
-          const isActive = pathname === item.href;
+          const isActive = pathname === item.href || (pathname === '/' && item.href === '/dashboard');
           return (
             <Link
               key={item.href}
@@ -66,7 +85,7 @@ export function BottomNav() {
 
               {/* Indicator Garis Aktif Atas */}
               {isActive && (
-                <span className="absolute top-0 w-12 h-1 bg-blue-600 rounded-b-full shadow-sm" />
+                <span className="absolute top-0 w-10 h-1 bg-blue-600 rounded-b-full shadow-sm" />
               )}
             </Link>
           );

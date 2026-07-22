@@ -58,8 +58,8 @@ export async function login(prevState: LoginState, formData: FormData): Promise<
     return { error: `Terjadi kesalahan: ${message}` };
   }
 
-  // Redirect di luar try-catch karena redirect melempar error internal Next.js
-  redirect('/');
+  // Redirect ke Dashboard setelah login biasa dari depan
+  redirect('/dashboard');
 }
 
 export async function setCustomPassword(newPassword: string): Promise<{ success: boolean; error?: string }> {
@@ -101,7 +101,6 @@ export async function linkGoogleAccount(email: string): Promise<{ success: boole
   }
 
   try {
-    // Cek apakah akun siswa sudah punya email_google terdaftar
     const { data: siswa, error: fetchErr } = await getSupabase()
       .from('tb_siswa')
       .select('email_google')
@@ -113,7 +112,6 @@ export async function linkGoogleAccount(email: string): Promise<{ success: boole
       return { success: false, error: 'Gagal mengambil data siswa.' };
     }
 
-    // Jika belum ada email_google, simpan email baru
     if (!siswa.email_google) {
       const { error: updateErr } = await getSupabase()
         .from('tb_siswa')
