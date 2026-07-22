@@ -4,6 +4,7 @@ import { getSession } from '@/app/lib/session';
 import { redirect } from 'next/navigation';
 import { LogoutButton } from '@/app/components/logout-button';
 import { BottomNav } from '@/app/components/bottom-nav';
+import { WelcomeModal } from '@/app/components/welcome-modal';
 import { getSupabase } from '@/app/lib/supabase';
 
 interface Pembayaran {
@@ -16,7 +17,11 @@ interface Pembayaran {
   metode_bayar: string | null;
 }
 
-export default async function RiwayatPembayaran() {
+interface PageProps {
+  searchParams: Promise<{ welcome?: string }>;
+}
+
+export default async function RiwayatPembayaran({ searchParams }: PageProps) {
   // 1. Cek sesi aktif di server
   const session = await getSession();
 
@@ -24,6 +29,19 @@ export default async function RiwayatPembayaran() {
   if (!session) {
     redirect('/login');
   }
+
+  const resolvedSearchParams = await searchParams;
+  const isWelcomeFlow = resolvedSearchParams?.welcome === 'true';
+
+  // Fetch status email_google dan custom_password siswa dari Supabase
+  const { data: siswaData } = await getSupabase()
+    .from('tb_siswa')
+    .select('email_google, custom_password')
+    .eq('id_siswa', session.userId)
+    .single();
+
+  const hasGoogleEmail = !!siswaData?.email_google;
+  const hasCustomPassword = !!siswaData?.custom_password;
 
   // Fetch data dari tb_pembayaran_siswa di Supabase untuk user yang login
   const { data: rawPembayaran, error } = await getSupabase()
@@ -63,7 +81,6 @@ export default async function RiwayatPembayaran() {
   // Fungsi format Tanggal
   const formatTanggal = (isoString: string | null) => {
     if (!isoString) return '-';
-    // Ganti spasi dengan 'T' jika formatnya YYYY-MM-DD HH:mm:ss
     const formattedString = isoString.includes(' ') && !isoString.includes('T')
       ? isoString.replace(' ', 'T')
       : isoString;
@@ -89,6 +106,16 @@ export default async function RiwayatPembayaran() {
 
   return (
     <main className="min-h-screen bg-gray-100 flex justify-center">
+      {/* Popup Welcome & Onboarding jika welcome parameter ada */}
+      {isWelcomeFlow && (
+        <WelcomeModal
+          namaSiswa={session.nama}
+          hasGoogleEmail={hasGoogleEmail}
+          hasCustomPassword={hasCustomPassword}
+          isOpenInitial={true}
+        />
+      )}
+
       <div className="w-full max-w-md bg-white min-h-screen shadow-lg relative pb-20">
         
         {/* Header App - Menampilkan Nama User */}
