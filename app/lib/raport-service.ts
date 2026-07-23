@@ -3,6 +3,43 @@ import { getSupabase } from '@/app/lib/supabase';
 import { MOCK_RAPORT_DATA } from '@/app/lib/mock-raport';
 import { RaportRecord, RaportByMapel, RaportSummaryStats, NilaiStatus } from '@/app/types/raport';
 
+export async function getRaportFeatureStatus(): Promise<{
+  isComingSoon: boolean;
+  message?: string;
+}> {
+  // 1. Cek override via ENV variabel jika di-set secara eksplisit
+  const envStatus = process.env.NEXT_PUBLIC_RAPORT_STATUS || process.env.RAPORT_STATUS;
+  if (envStatus === 'active' || envStatus === 'aktif') {
+    return { isComingSoon: false };
+  }
+  if (envStatus === 'coming_soon') {
+    return { isComingSoon: true };
+  }
+
+  // 2. Cek status di Database Supabase (tabel `tb_pengaturan`)
+  try {
+    const { data, error } = await getSupabase()
+      .from('tb_pengaturan')
+      .select('value, keterangan')
+      .eq('key', 'status_raport')
+      .maybeSingle();
+
+    if (!error && data) {
+      const val = String(data.value).toLowerCase().trim();
+      const isActive = val === 'active' || val === 'aktif' || val === 'enabled' || val === 'true';
+      return {
+        isComingSoon: !isActive,
+        message: data.keterangan || undefined,
+      };
+    }
+  } catch (e) {
+    console.log('Catatan: Query tb_pengaturan fallback ke coming_soon status:', e);
+  }
+
+  // Default saat ini: Coming Soon (sesuai permintaan)
+  return { isComingSoon: true };
+}
+
 export async function getRaportSiswa(idSiswa: number): Promise<{
   data: RaportRecord[];
   isMock: boolean;

@@ -4,8 +4,9 @@ import { getSession } from '@/app/lib/session';
 import { redirect } from 'next/navigation';
 import { LogoutButton } from '@/app/components/logout-button';
 import { BottomNav } from '@/app/components/bottom-nav';
-import { getRaportSiswa } from '@/app/lib/raport-service';
+import { getRaportSiswa, getRaportFeatureStatus } from '@/app/lib/raport-service';
 import { RaportView } from './raport-view';
+import { RaportComingSoonView } from './coming-soon-view';
 
 export default async function RaportSiswaPage() {
   // 1. Cek sesi aktif di server
@@ -16,8 +17,8 @@ export default async function RaportSiswaPage() {
     redirect('/login');
   }
 
-  // Fetch data raport (otomatis mengecek flag process.env.NEXT_PUBLIC_USE_MOCK_RAPORT)
-  const { summary, groupedByMapel, isMock } = await getRaportSiswa(session.userId);
+  // 3. Cek status fitur raport dari database / env (coming_soon vs active)
+  const featureStatus = await getRaportFeatureStatus();
 
   // Helper inisial nama untuk avatar
   const getInitials = (nama: string) => {
@@ -28,6 +29,12 @@ export default async function RaportSiswaPage() {
       .toUpperCase()
       .slice(0, 2);
   };
+
+  // jika coming soon, jangan fetch data raport untuk menghemat query
+  let raportData = null;
+  if (!featureStatus.isComingSoon) {
+    raportData = await getRaportSiswa(session.userId);
+  }
 
   return (
     <main className="min-h-screen bg-gray-100 flex justify-center">
@@ -56,12 +63,21 @@ export default async function RaportSiswaPage() {
           </div>
         </header>
 
-        {/* Konten Halaman Raport */}
-        <RaportView
-          summary={summary}
-          groupedByMapel={groupedByMapel}
-          isMock={isMock}
-        />
+        {/* Render tampilan berdasarkan status fitur */}
+        {featureStatus.isComingSoon ? (
+          <RaportComingSoonView
+            namaSiswa={session.nama}
+            customMessage={featureStatus.message}
+          />
+        ) : (
+          raportData && (
+            <RaportView
+              summary={raportData.summary}
+              groupedByMapel={raportData.groupedByMapel}
+              isMock={raportData.isMock}
+            />
+          )
+        )}
 
       </div>
 
