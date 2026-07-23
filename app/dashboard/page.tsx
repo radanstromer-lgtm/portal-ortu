@@ -83,10 +83,10 @@ export default async function DashboardPage({ searchParams }: PageProps) {
       <div className="w-full max-w-md bg-slate-50 min-h-screen shadow-lg relative pb-24">
         
         {/* Header App */}
-        <header className="bg-gradient-to-r from-blue-700 via-blue-600 to-indigo-700 text-white p-5 sticky top-0 z-10 rounded-b-2xl shadow-lg">
+        <header className="bg-gradient-to-r from-emerald-800 via-emerald-700 to-teal-800 text-white p-5 sticky top-0 z-10 rounded-b-2xl shadow-lg">
           <div className="flex justify-between items-center">
             <div>
-              <span className="text-[10px] font-bold uppercase tracking-wider bg-white/20 px-2.5 py-0.5 rounded-full text-blue-100">
+              <span className="text-[10px] font-bold uppercase tracking-wider bg-white/20 px-2.5 py-0.5 rounded-full text-emerald-100">
                 Portal Orang Tua
               </span>
               <h1 className="text-xl font-extrabold mt-1">Rumah Belajar L 253</h1>
@@ -102,7 +102,7 @@ export default async function DashboardPage({ searchParams }: PageProps) {
           {/* User Welcome Card */}
           <div className="mt-4 pt-3.5 border-t border-white/20 flex items-center justify-between">
             <div>
-              <p className="text-xs text-blue-100/90">Selamat Datang,</p>
+              <p className="text-xs text-emerald-100/90">Selamat Datang,</p>
               <h2 className="text-base font-bold text-white tracking-tight">
                 Orang Tua dari {session.nama}
               </h2>
@@ -117,7 +117,7 @@ export default async function DashboardPage({ searchParams }: PageProps) {
           <div className="grid grid-cols-2 gap-3">
             <Link
               href="/pembayaran"
-              className="p-4 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-2xl text-white shadow-md hover:shadow-lg transition-all active:scale-95 group relative overflow-hidden"
+              className="p-4 bg-gradient-to-br from-rose-600 to-red-700 rounded-2xl text-white shadow-md hover:shadow-lg transition-all active:scale-95 group relative overflow-hidden"
             >
               <div className="absolute -right-4 -bottom-4 w-16 h-16 bg-white/10 rounded-full blur-xl group-hover:scale-150 transition-transform" />
               <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center mb-3">
@@ -126,7 +126,7 @@ export default async function DashboardPage({ searchParams }: PageProps) {
                 </svg>
               </div>
               <h3 className="text-sm font-bold">Pembayaran</h3>
-              <p className="text-[11px] text-blue-100/80 mt-0.5">Cek tagihan & SPP</p>
+              <p className="text-[11px] text-rose-100/80 mt-0.5">Cek tagihan & SPP</p>
             </Link>
 
             <Link

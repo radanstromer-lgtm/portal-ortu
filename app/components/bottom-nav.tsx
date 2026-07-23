@@ -77,7 +77,7 @@ export function BottomNav() {
               key={item.href}
               href={item.href}
               className={`flex flex-col items-center justify-center w-full h-full space-y-1 transition-colors duration-200 relative ${
-                isActive ? 'text-blue-600 font-semibold' : 'text-gray-400 hover:text-gray-600'
+                isActive ? 'text-emerald-600 font-semibold' : 'text-gray-400 hover:text-gray-600'
               }`}
             >
               {item.icon(isActive)}
@@ -85,7 +85,7 @@ export function BottomNav() {
 
               {/* Indicator Garis Aktif Atas */}
               {isActive && (
-                <span className="absolute top-0 w-10 h-1 bg-blue-600 rounded-b-full shadow-sm" />
+                <span className="absolute top-0 w-10 h-1 bg-emerald-600 rounded-b-full shadow-sm" />
               )}
             </Link>
           );
