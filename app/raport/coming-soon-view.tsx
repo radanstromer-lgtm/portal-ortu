@@ -76,19 +76,6 @@ export function RaportComingSoonView({ namaSiswa, customMessage }: ComingSoonVie
               </p>
             </div>
           </div>
-
-          {/* Feature 3 */}
-          <div className="flex items-start gap-3 p-3 bg-emerald-50/50 border border-emerald-100 rounded-xl">
-            <div className="p-2 bg-emerald-700 text-white rounded-lg flex-shrink-0 text-sm">
-              📈
-            </div>
-            <div>
-              <h4 className="text-xs font-bold text-gray-800">Ringkasan Statistik Real-time</h4>
-              <p className="text-[11px] text-gray-500 mt-0.5 leading-relaxed">
-                Grafik persentase tingkat penguasaan materi siswa per semester.
-              </p>
-            </div>
-          </div>
         </div>
       </div>
 
